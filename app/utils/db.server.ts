@@ -1,29 +1,27 @@
-import { join, dirname } from "path";
-import { Low, JSONFile } from "lowdb";
-import { fileURLToPath } from "url";
+export type Data = {
+  users: User[];
+};
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+export type User = {
+  username: string;
+  passwordHash: string;
+  validated: boolean;
+};
 
-// Use JSON file for storage
-const file = join(__dirname, "db.json");
-const adapter = new JSONFile(file);
-const db = new Low(adapter);
+let db: any;
+let adapter: any;
 
-// Read data from JSON file, this will set db.data content
-await db.read();
+async function getDb() {
+  if (db === undefined && adapter === undefined) {
+    // Use JSON file for storage
+    const { Low, JSONFile } = await import("lowdb");
+    adapter = new JSONFile<Data>("db.json");
+    db = new Low<Data>(adapter);
+  }
 
-// If file.json doesn't exist, db.data will be null
-// Set default data
-// db.data = db.data || { posts: [] } // Node < v15.x
-db.data ||= { posts: [] }; // Node >= 15.x
+  // Read data from JSON file, this will set db.data content
+  await db.read();
+  return db;
+}
 
-// Create and query items using plain JS
-db.data.posts.push("hello world");
-db.data.posts[0];
-
-// You can also use this syntax if you prefer
-const { posts } = db.data;
-posts.push("hello world");
-
-// Write db.data content to db.json
-await db.write();
+export { getDb };

@@ -21,6 +21,13 @@ async function getDb() {
 
   // Read data from JSON file, this will set db.data content
   await db.read();
+
+  // Set defaults
+  if (db.data === null) {
+    db.data = { users: [] };
+    await db.write();
+  }
+
   return db;
 }
 

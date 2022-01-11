@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 import { Low } from "lowdb";
 import { Data, getDb, User } from "./db.server";
 
@@ -12,10 +13,15 @@ export async function register({ username, password }: LoginForm) {
 
   const db = (await getDb()) as Low<Data>;
 
+  const date = new Date();
+
   const user: User = {
+    id: randomUUID(),
     username,
     passwordHash,
     validated: false,
+    createdAt: date,
+    updatedAt: date,
   };
 
   db.data?.users.push(user);

@@ -1,5 +1,11 @@
-import { ActionFunction, json, Link, useActionData } from "remix";
-import { Data, getDb } from "~/utils/db.server";
+import {
+  ActionFunction,
+  json,
+  Link,
+  useActionData,
+  useSearchParams,
+} from "remix";
+import { createUserSession, login } from "~/utils/session.server";
 
 type ActionData = {
   formError?: string;
@@ -19,23 +25,34 @@ export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
 
   const username = form.get("username");
+  const password = form.get("password");
 
-  const db = await getDb();
+  const redirectTo = form.get("redirectTo") || "/";
 
-  const user = await (db.data as Data)?.users.find((user) => {
-    return user.username === username;
-  });
-
-  if (user === undefined) {
-    return badRequest({ formError: "User does not exist." });
+  if (
+    typeof username !== "string" ||
+    typeof password !== "string" ||
+    typeof redirectTo !== "string"
+  ) {
+    return badRequest({
+      formError: `Form not submitted correctly.`,
+    });
   }
 
-  console.log(form);
-  return null;
+  const user = await login({ username, password });
+  if (user === null) {
+    return {
+      fields: { username, password: "" },
+      formError: "Login failed.",
+    };
+  }
+
+  return createUserSession(user.id, redirectTo);
 };
 
 function Login() {
   const actionData = useActionData<ActionData>();
+  const [searchParams] = useSearchParams();
 
   return (
     <>
@@ -51,6 +68,11 @@ function Login() {
       </nav>
       <h1>Login</h1>
       <form method="post">
+        <input
+          type="hidden"
+          name="redirectTo"
+          value={searchParams.get("redirectTo") ?? undefined}
+        />
         <div>
           <label htmlFor="username-input">Username</label>
           <input type="text" id="username-input" name="username" />

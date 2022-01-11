@@ -108,3 +108,12 @@ export async function createUserSession(userId: string, redirectTo: string) {
     },
   });
 }
+
+export async function logout(request: Request, redirectTo: string = "/login") {
+  const session = await storage.getSession(request.headers.get("Cookie"));
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": await storage.destroySession(session),
+    },
+  });
+}

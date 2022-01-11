@@ -1,21 +1,21 @@
 import { Link } from "remix";
 
-function Index() {
+function Register() {
   return (
     <>
       <nav>
         <ul>
           <li>
-            <Link to="/login">Login</Link>
+            <Link to="/">Home</Link>
           </li>
           <li>
-            <Link to="/register">Register</Link>
+            <Link to="/login">Login</Link>
           </li>
         </ul>
       </nav>
-      <h1>Home</h1>
+      <h1>Register</h1>
     </>
   );
 }
 
-export default Index;
+export default Register;

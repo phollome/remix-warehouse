@@ -1,7 +1,9 @@
 import { join } from "path";
+import { randomUUID } from "crypto";
 
 export type Data = {
   users: User[];
+  items: Item[];
 };
 
 export type User = {
@@ -11,6 +13,13 @@ export type User = {
   validated: boolean;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type Item = {
+  id: string;
+  name: string;
+  amount: number;
+  amountType: string;
 };
 
 let db: any;
@@ -29,11 +38,32 @@ async function getDb() {
 
   // Set defaults
   if (db.data === null) {
-    db.data = { users: [] };
+    db.data = { users: [], items: [] };
     await db.write();
   }
 
   return db;
+}
+
+type AddItemParameters = {
+  name: string;
+  amount: number;
+  amountType: string;
+};
+
+export async function addItem(params: AddItemParameters) {
+  const db = await getDb();
+  const id = randomUUID();
+
+  const item = {
+    id,
+    ...params,
+  };
+
+  db.data.items.push(item);
+  await db.write();
+
+  return item;
 }
 
 export { getDb };

@@ -1,9 +1,8 @@
-import { LoaderFunction } from "remix";
+import { Link, LoaderFunction } from "remix";
 import { requireUserId } from "~/utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireUserId(request);
-  return null;
+  return requireUserId(request);
 };
 
 function Index() {
@@ -15,6 +14,8 @@ function Index() {
         </button>
       </form>
       <h1>Home</h1>
+      <Link to="/items">All items</Link>,{" "}
+      <Link to="/items/new">Add new item</Link>
     </>
   );
 }

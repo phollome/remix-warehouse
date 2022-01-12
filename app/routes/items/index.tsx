@@ -1,9 +1,8 @@
-import { LoaderFunction, useLoaderData } from "remix";
+import { LoaderFunction, useLoaderData, Link } from "remix";
 import type { Low } from "lowdb";
 import type { Data, Item } from "~/utils/db.server";
 import { getDb } from "~/utils/db.server";
 import { requireUserId } from "~/utils/session.server";
-import { Link } from "react-router-dom";
 
 type LoaderData = {
   items: Item[];

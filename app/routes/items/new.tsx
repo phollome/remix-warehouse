@@ -2,6 +2,7 @@ import type { Collection } from "mongodb";
 import {
   ActionFunction,
   json,
+  Link,
   LoaderFunction,
   redirect,
   useActionData,
@@ -57,37 +58,46 @@ function NewItem() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <section>
-      <h1>Add new item</h1>
-      <form method="post">
-        <div>
-          <label htmlFor="item-name-input">name</label>
-          <input type="text" id="item-name-input" name="itemName" />
-        </div>
-        <div>
-          <label htmlFor="item-amount-input">amount</label>
-          <input type="number" id="item-amount-input" name="itemAmount" />
-        </div>
-        <div>
-          <label htmlFor="item-amount-type-select">amount type</label>
-          <select id="item-amount-type-select" name="itemAmountType">
-            <option value="grams">grams</option>
-            <option value="kilograms">kilograms</option>
-            <option value="pieces">pieces</option>
-          </select>
-        </div>
-        <div id="form-error-message">
-          {actionData?.formError ? (
-            <p className="form-validation-error" role="alert">
-              {actionData?.formError}
-            </p>
-          ) : null}
-        </div>
-        <button type="submit" className="button">
-          Submit
-        </button>
-      </form>
-    </section>
+    <>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+        </ul>
+      </nav>
+      <section>
+        <h1>Add new item</h1>
+        <form method="post">
+          <div>
+            <label htmlFor="item-name-input">name</label>
+            <input type="text" id="item-name-input" name="itemName" />
+          </div>
+          <div>
+            <label htmlFor="item-amount-input">amount</label>
+            <input type="number" id="item-amount-input" name="itemAmount" />
+          </div>
+          <div>
+            <label htmlFor="item-amount-type-select">amount type</label>
+            <select id="item-amount-type-select" name="itemAmountType">
+              <option value="grams">grams</option>
+              <option value="kilograms">kilograms</option>
+              <option value="pieces">pieces</option>
+            </select>
+          </div>
+          <div id="form-error-message">
+            {actionData?.formError ? (
+              <p className="form-validation-error" role="alert">
+                {actionData?.formError}
+              </p>
+            ) : null}
+          </div>
+          <button type="submit" className="button">
+            Submit
+          </button>
+        </form>
+      </section>
+    </>
   );
 }
 

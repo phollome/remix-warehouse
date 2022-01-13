@@ -30,14 +30,23 @@ function Item() {
   const data = useLoaderData<LoaderData>();
 
   return (
-    <div>
-      <p>
+    <>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/items" prefetch="render">
+              Items
+            </Link>
+          </li>
+        </ul>
+      </nav>
+      <h1>
         <Link to=".">{data.item.name}</Link>
-      </p>
+      </h1>
       <p>
         {data.item.amount} {data.item.amountType}
       </p>
-    </div>
+    </>
   );
 }
 

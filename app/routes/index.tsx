@@ -14,8 +14,13 @@ function Index() {
         </button>
       </form>
       <h1>Home</h1>
-      <Link to="/items">All items</Link>,{" "}
-      <Link to="/items/new">Add new item</Link>
+      <Link to="/items" prefetch="render">
+        All items
+      </Link>
+      ,{" "}
+      <Link to="/items/new" prefetch="render">
+        Add new item
+      </Link>
     </>
   );
 }

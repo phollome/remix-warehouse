@@ -27,20 +27,33 @@ function ItemsIndex() {
 
   return (
     <>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/" prefetch="render">
+              Home
+            </Link>
+          </li>
+        </ul>
+      </nav>
       <h1>Items</h1>
-      {loaderData.items.map((item) => {
-        const id = item._id;
-        return (
-          <div key={id}>
-            <p>
-              <Link to={`./${id}`}>{item.name}</Link>
-            </p>
-            <p>
-              {item.amount} {item.amountType}
-            </p>
-          </div>
-        );
-      })}
+      <ul>
+        {loaderData.items.map((item) => {
+          const id = item._id;
+          return (
+            <li key={id}>
+              <p>
+                <Link to={`./${id}`} prefetch="intent">
+                  {item.name}
+                </Link>
+              </p>
+              <p>
+                {item.amount} {item.amountType}
+              </p>
+            </li>
+          );
+        })}
+      </ul>
     </>
   );
 }

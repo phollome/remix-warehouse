@@ -1,8 +1,7 @@
 import bcrypt from "bcryptjs";
-import { randomUUID } from "crypto";
-import { Low } from "lowdb";
 import { createCookieSessionStorage, redirect } from "remix";
-import { Data, getDb, User } from "./db.server";
+import type { User, UserDoc } from "./db.server";
+import { getDb } from "./db.server";
 
 type LoginForm = {
   username: string;
@@ -29,15 +28,15 @@ const storage = createCookieSessionStorage({
   },
 });
 
-export async function register({ username, password }: LoginForm) {
+export async function register({
+  username,
+  password,
+}: LoginForm): Promise<UserDoc> {
   const passwordHash = await bcrypt.hash(password, 10);
-
-  const db = (await getDb()) as Low<Data>;
 
   const date = new Date();
 
   const user: User = {
-    id: randomUUID(),
     username,
     passwordHash,
     validated: false,
@@ -45,20 +44,22 @@ export async function register({ username, password }: LoginForm) {
     updatedAt: date,
   };
 
-  db.data?.users.push(user);
-  db.write();
+  const db = await getDb();
+  const collection = db.collection("users");
 
-  return user;
+  const result = await collection.insertOne(user);
+  return { _id: result.insertedId, ...user };
 }
 
-export async function login({ username, password }: LoginForm) {
-  const db = (await getDb()) as Low<Data>;
+export async function login({
+  username,
+  password,
+}: LoginForm): Promise<UserDoc | null> {
+  const db = await getDb();
+  const collection = db.collection("users");
+  const user = (await collection.findOne({ username })) as UserDoc | null;
 
-  const user = await db.data?.users.find((user) => {
-    return user.username === username;
-  });
-
-  if (user === undefined) {
+  if (user === null) {
     return null;
   }
 

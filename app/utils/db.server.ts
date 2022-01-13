@@ -1,13 +1,7 @@
-import { join } from "path";
-import { randomUUID } from "crypto";
-
-export type Data = {
-  users: User[];
-  items: Item[];
-};
+import type { Db } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 export type User = {
-  id: string;
   username: string;
   passwordHash: string;
   validated: boolean;
@@ -15,55 +9,49 @@ export type User = {
   updatedAt: Date;
 };
 
+export type UserDoc = User & {
+  _id: ObjectId;
+};
+
 export type Item = {
-  id: string;
+  _id?: ObjectId;
   name: string;
   amount: number;
   amountType: string;
+};
+
+export type ItemDoc = Item & {
+  _id: ObjectId;
 };
 
 let db: any;
-let adapter: any;
 
-async function getDb() {
-  if (db === undefined && adapter === undefined) {
-    // Use JSON file for storage
-    const { Low, JSONFile } = await import("lowdb");
-    adapter = new JSONFile<Data>(join(__dirname, "db.json"));
-    db = new Low<Data>(adapter);
+const mongodbUri = process.env.MONGODB_URI;
+if (mongodbUri === undefined) {
+  throw new Error("MongoDB uri must be set.");
+}
+const client = new MongoClient(mongodbUri);
+
+async function getDb(): Promise<Db> {
+  if (db === undefined) {
+    await client.connect();
+    db = client.db("remix-warehouse");
   }
-
-  // Read data from JSON file, this will set db.data content
-  await db.read();
-
-  // Set defaults
-  if (db.data === null) {
-    db.data = { users: [], items: [] };
-    await db.write();
-  }
-
   return db;
 }
 
-type AddItemParameters = {
-  name: string;
-  amount: number;
-  amountType: string;
-};
+// needed for hexString conversion
+// ObjectId.createFromHexString doesn't work in browser context
+async function findItemById(id: string): Promise<ItemDoc | null> {
+  if (db === undefined) {
+    await getDb();
+  }
+  const collection = db.collection("items");
 
-export async function addItem(params: AddItemParameters) {
-  const db = await getDb();
-  const id = randomUUID();
-
-  const item = {
-    id,
-    ...params,
-  };
-
-  db.data.items.push(item);
-  await db.write();
-
+  const item = await collection.findOne({
+    _id: ObjectId.createFromHexString(id),
+  });
   return item;
 }
 
-export { getDb };
+export { getDb, findItemById };

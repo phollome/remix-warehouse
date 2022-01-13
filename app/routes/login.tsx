@@ -47,7 +47,7 @@ export const action: ActionFunction = async ({ request }) => {
     };
   }
 
-  return createUserSession(user.id, redirectTo);
+  return createUserSession(user._id.toHexString(), redirectTo);
 };
 
 function Login() {

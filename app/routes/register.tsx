@@ -1,6 +1,7 @@
-import { Low } from "lowdb";
+import type { Collection } from "mongodb";
 import { ActionFunction, json, Link, useActionData } from "remix";
-import { Data, getDb } from "~/utils/db.server";
+import type { UserDoc } from "~/utils/db.server";
+import { getDb } from "~/utils/db.server";
 import { register } from "~/utils/session.server";
 
 type ActionData = {
@@ -29,13 +30,11 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
-  const db = (await getDb()) as Low<Data>;
+  const db = await getDb();
+  const collection: Collection = db.collection("users");
+  const user = (await collection.findOne({ username })) as UserDoc | null;
 
-  const user = await db.data?.users.find((user) => {
-    return user.username === username;
-  });
-
-  if (user !== undefined) {
+  if (user !== null) {
     return badRequest({
       fields: { username, password: "" },
       fieldErrors: { username: "User still exists." },

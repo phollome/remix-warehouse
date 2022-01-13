@@ -1,3 +1,4 @@
+import type { Collection } from "mongodb";
 import {
   ActionFunction,
   json,
@@ -6,7 +7,7 @@ import {
   useActionData,
 } from "remix";
 import type { Item } from "~/utils/db.server";
-import { addItem } from "~/utils/db.server";
+import { getDb } from "~/utils/db.server";
 import { requireUserId } from "~/utils/session.server";
 
 type ActionData = {
@@ -39,9 +40,17 @@ export const action: ActionFunction = async ({ request }) => {
     });
   }
 
-  const item = await addItem({ name, amount: parsedAmount, amountType });
+  const db = await getDb();
+  const collection: Collection = db.collection("items");
 
-  return redirect(`/items/${item.id}`);
+  const doc = {
+    name,
+    amount: parsedAmount,
+    amountType,
+  };
+  const result = await collection.insertOne(doc);
+
+  return redirect(`/items/${result.insertedId.toString()}`);
 };
 
 function NewItem() {

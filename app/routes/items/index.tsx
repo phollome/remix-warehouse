@@ -1,21 +1,23 @@
-import { LoaderFunction, useLoaderData, Link } from "remix";
-import type { Low } from "lowdb";
-import type { Data, Item } from "~/utils/db.server";
+import { Link, LoaderFunction, useLoaderData } from "remix";
+import type { Item, ItemDoc } from "~/utils/db.server";
 import { getDb } from "~/utils/db.server";
 import { requireUserId } from "~/utils/session.server";
 
+type LoaderDataItem = Item & {
+  _id: string;
+};
+
 type LoaderData = {
-  items: Item[];
+  items: LoaderDataItem[];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUserId(request, "/login");
 
-  const db = (await getDb()) as Low<Data>;
+  const db = await getDb();
+  const collection = db.collection("items");
 
-  const items: Item[] = db.data?.items || [];
-
-  console.log(items);
+  const items = (await collection.find().toArray()) as ItemDoc[];
 
   return { items };
 };
@@ -27,10 +29,11 @@ function ItemsIndex() {
     <>
       <h1>Items</h1>
       {loaderData.items.map((item) => {
+        const id = item._id;
         return (
-          <div key={item.id}>
+          <div key={id}>
             <p>
-              <Link to={`./${item.id}`}>{item.name}</Link>
+              <Link to={`./${id}`}>{item.name}</Link>
             </p>
             <p>
               {item.amount} {item.amountType}

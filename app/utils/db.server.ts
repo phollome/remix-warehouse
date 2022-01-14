@@ -10,18 +10,17 @@ export type User = {
 };
 
 export type UserDoc = User & {
-  _id: ObjectId;
+  _id: ObjectId | string;
 };
 
 export type Item = {
-  _id?: ObjectId;
   name: string;
   amount: number;
   amountType: string;
 };
 
 export type ItemDoc = Item & {
-  _id: ObjectId;
+  _id: ObjectId | string;
 };
 
 let db: any;
@@ -52,6 +51,17 @@ async function findItemById(id: string): Promise<ItemDoc | null> {
     _id: ObjectId.createFromHexString(id),
   });
   return item;
+}
+
+export async function removeItemById(id: string) {
+  if (db === undefined) {
+    await getDb();
+  }
+  const collection = db.collection("items");
+
+  await collection.findOneAndDelete({
+    _id: ObjectId.createFromHexString(id),
+  });
 }
 
 export { getDb, findItemById };

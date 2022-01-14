@@ -23,7 +23,7 @@ export type ItemDoc = Item & {
   _id: ObjectId | string;
 };
 
-let db: any;
+let db: Db;
 
 const mongodbUri = process.env.MONGODB_URI;
 if (mongodbUri === undefined) {
@@ -50,7 +50,7 @@ async function findItemById(id: string): Promise<ItemDoc | null> {
   const item = await collection.findOne({
     _id: ObjectId.createFromHexString(id),
   });
-  return item;
+  return item as ItemDoc;
 }
 
 export async function removeItemById(id: string) {
@@ -62,6 +62,22 @@ export async function removeItemById(id: string) {
   await collection.findOneAndDelete({
     _id: ObjectId.createFromHexString(id),
   });
+}
+
+export async function updateItemById(id: string, data: Item) {
+  if (db === undefined) {
+    await getDb();
+  }
+  const collection = db.collection("items");
+
+  const result = await collection.findOneAndUpdate(
+    {
+      _id: ObjectId.createFromHexString(id),
+    },
+    { $set: { ...data } }
+  );
+
+  console.log(result);
 }
 
 export { getDb, findItemById };

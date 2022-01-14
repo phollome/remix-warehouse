@@ -23,28 +23,42 @@ export type ItemDoc = Item & {
   _id: ObjectId | string;
 };
 
-let db: Db;
+declare global {
+  var __client: MongoClient | undefined;
+}
+
+let client: MongoClient;
 
 const mongodbUri = process.env.MONGODB_URI;
 if (mongodbUri === undefined) {
   throw new Error("MongoDB uri must be set.");
 }
-const client = new MongoClient(mongodbUri);
 
 async function getDb(): Promise<Db> {
-  if (db === undefined) {
-    await client.connect();
+  let db;
+
+  if (process.env.NODE_ENV === "production") {
+    if (client === undefined) {
+      client = new MongoClient(mongodbUri as string);
+      await client.connect();
+    }
     db = client.db("remix-warehouse");
+  } else {
+    if (global.__client === undefined) {
+      console.log("connect");
+      global.__client = new MongoClient(mongodbUri as string);
+      await global.__client.connect();
+    }
+    db = global.__client.db("remix-warehouse");
   }
+
   return db;
 }
 
 // needed for hexString conversion
 // ObjectId.createFromHexString doesn't work in browser context
 async function findItemById(id: string): Promise<ItemDoc | null> {
-  if (db === undefined) {
-    await getDb();
-  }
+  const db = await getDb();
   const collection = db.collection("items");
 
   const item = await collection.findOne({
@@ -54,9 +68,7 @@ async function findItemById(id: string): Promise<ItemDoc | null> {
 }
 
 export async function removeItemById(id: string) {
-  if (db === undefined) {
-    await getDb();
-  }
+  const db = await getDb();
   const collection = db.collection("items");
 
   await collection.findOneAndDelete({
@@ -65,9 +77,7 @@ export async function removeItemById(id: string) {
 }
 
 export async function updateItemById(id: string, data: Item) {
-  if (db === undefined) {
-    await getDb();
-  }
+  const db = await getDb();
   const collection = db.collection("items");
 
   const result = await collection.findOneAndUpdate(
